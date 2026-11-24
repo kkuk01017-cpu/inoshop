@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผงควบคุมแอดมิน — iNO Shop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0F0F1A',
+                        card: '#1A1A2E',
+                        primary: '#4F9FFF',
+                        secondary: '#00D9FF',
+                        success: '#22C55E',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-dark text-white min-h-screen">
+    <!-- ส่วนหัว -->
+    <header class="bg-card border-b border-gray-700 sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <h1 class="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                <i class="fa fa-cog mr-2"></i>แผงแอดมิน iNO Shop
+            </h1>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-success"><i class="fa fa-user-circle mr-1"></i>แอดมิน</span>
+                <button onclick="doLogout()" class="text-sm text-gray-400 hover:text-danger">
+                    <i class="fa fa-sign-out mr-1"></i>ออกจากระบบ
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <!-- เมนูแท็บ -->
+        <div class="flex flex-wrap gap-2 mb-6">
+            <button class="tab-btn active bg-primary/20 text-primary border border-primary px-4 py-2 rounded-lg" data-tab="products">
+                <i class="fa fa-shopping-bag mr-1"></i> จัดการสินค้า
+            </button>
+            <button class="tab-btn bg-card border border-gray-700 px-4 py-2 rounded-lg hover:border-primary" data-tab="categories">
+                <i class="fa fa-th-large mr-1"></i> จัดการหมวดหมู่
+            </button>
+            <a href="index.html" class="bg-card border border-gray-700 px-4 py-2 rounded-lg hover:border-primary">
+                <i class="fa fa-eye mr-1"></i> ดูหน้าร้าน
+            </a>
+        </div>
+
+        <!-- ================================== -->
+        <!-- ส่วนจัดการสินค้า -->
+        <!-- ================================== -->
+        <div id="tab-products" class="tab-content">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-lg font-semibold">รายการสินค้า (<span id="productCount">0</span>)</h2>
+                <button onclick="openAddModal()" class="bg-gradient-to-r from-primary to-secondary px-4 py-2 rounded-lg font-semibold text-dark">
+                    <i class="fa fa-plus mr-1"></i> เพิ่มสินค้า
+                </button>
+            </div>
+
+            <!-- ตารางสินค้า -->
+            <div class="bg-card rounded-xl border border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="bg-gray-800/50 text-gray-400">
+                                <th class="text-left p-4">สินค้า</th>
+                                <th class="text-left p-4 hidden md:table-cell">หมวดหมู่</th>
+                                <th class="text-left p-4">ราคา</th>
+                                <th class="text-left p-4 hidden sm:table-cell">ขายแล้ว</th>
+                                <th class="text-center p-4">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- สินค้าจะแสดงที่นี่ -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================== -->
+        <!-- ส่วนจัดการหมวดหมู่ -->
+        <!-- ================================== -->
+        <div id="tab-categories" class="tab-content hidden">
+            <div class="flex justify-between items-center mb-5">
+                <h2 class="text-lg font-semibold">หมวดหมู่สินค้า</h2>
+                <button onclick="openAddCategoryModal()" class="bg-gradient-to-r from-primary to-secondary px-4 py-2 rounded-lg font-semibold text-dark">
+                    <i class="fa fa-plus mr-1"></i> เพิ่มหมวดหมู่
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="categoriesList">
+                <!-- หมวดหมู่จะแสดงที่นี่ -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================== -->
+    <!-- ป็อปอัพ: เพิ่ม/แก้ไข สินค้า -->
+    <!-- ================================== -->
+    <div id="productModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="relative bg-card rounded-2xl border border-gray-700 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-5">
+                    <h3 id="modalTitle" class="text-xl font-bold">เพิ่มสินค้า</h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-white"><i class="fa fa-times"></i></button>
+                </div>
+
+                <form id="productForm">
+                    <input type="hidden" id="editProductId">
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">ชื่อสินค้า *</label>
+                        <input type="text" id="prodName" required class="w-full bg-dark border border-gray-600 rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">หมวดหมู่ *</label>
+                        <select id="prodCategory" class="w-full bg-dark border border-gray-600 rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+                            <option value="gaming">สินค้าเกม</option>
+                            <option value="account">บัญชี</option>
+                            <option value="item">ไอเทม</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">ราคาต่ำสุด (฿)</label>
+                            <input type="number" id="prodPriceMin" required class="w-full bg-dark border border-gray-600 rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-1">ราคาสูงสุด (฿)</label>
+                            <input type="number" id="prodPriceMax" required class="w-full bg-dark border border-gray-600 rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">ไอคอน/อิโมจิ</label>
+                        <input type="text" id="prodImage" placeholder="เช่น 🔥 💎 🎮" class="w-full bg-dark border border-gray-600 rounded-lg px-4 py-2 focus:border-primary focus:outline-none">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm text-gray-400 mb-1">รายละเอียด</label>
+                        <textarea id="prodDesc" rows="2" class="w-full bg-dark border border-gray-600 rounded-lg px-4 py-2 focus:border-primary focus:outline-none"></textarea>
